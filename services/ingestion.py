@@ -10,7 +10,7 @@ from config.settings import settings
 
 class TelecomIngestionEngine:
     def __init__(self):
-        self.client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
+        self.client = QdrantClient(url=f"http://{settings.QDRANT_HOST}:{settings.QDRANT_PORT}", timeout=60.0)
         self.embed_model = HuggingFaceEmbedding(model_name=settings.EMBEDDING_MODEL)
         
     def extract_metadata(self, file_path: str) -> dict:

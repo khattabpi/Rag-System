@@ -176,8 +176,8 @@ class TelecomRAGPipeline:
     def __init__(self):
 
         self.client = QdrantClient(
-            host=settings.QDRANT_HOST,
-            port=settings.QDRANT_PORT
+            url=f"http://{settings.QDRANT_HOST}:{settings.QDRANT_PORT}",
+            timeout=60.0
         )
 
         LlamaSettings.embed_model = HuggingFaceEmbedding(

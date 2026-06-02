@@ -33,7 +33,7 @@ services:
 
     restart: unless-stopped
 
-    # ❌ IMPORTANT: healthcheck removed (prevents false failures)
+
 
 
   # =========================
@@ -56,7 +56,7 @@ services:
 
     restart: unless-stopped
 
-    # ❌ IMPORTANT: healthcheck removed (was incorrectly configured)
+
 
 
   # =========================
@@ -84,4 +84,25 @@ services:
       - ./data/source_docs:/app/data/source_docs
       - ./.env:/app/.env
 
+    restart: unless-stopped
+
+  # =========================
+  # 4. Streamlit GUI
+  # =========================
+  rag-gui:
+    image: python:3.11-slim
+    container_name: oran_rag_gui
+    working_dir: /app
+    volumes:
+      - ./gui:/app/gui
+    command: >
+      bash -c "pip install --no-cache-dir streamlit==1.36.0 requests==2.32.3 &&
+      streamlit run gui/app.py --server.port=8501 --server.address=0.0.0.0"
+    ports:
+      - "8501:8501"
+    networks:
+      oran_twin_net:
+        ipv4_address: 172.20.0.40
+    depends_on:
+      - rag-core-api
     restart: unless-stopped
