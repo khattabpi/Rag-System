@@ -1,0 +1,87 @@
+networks:
+  oran_twin_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  qdrant_storage:
+    driver: local
+  ollama_storage:
+    driver: local
+
+
+services:
+
+  # =========================
+  # 1. Ollama (LLM Runtime)
+  # =========================
+  ollama-service:
+    image: ollama/ollama:latest
+    container_name: oran_ollama_runtime
+
+    networks:
+      oran_twin_net:
+        ipv4_address: 172.20.0.10
+
+    ports:
+      - "11435:11434"
+
+    volumes:
+      - ollama_storage:/root/.ollama
+
+    restart: unless-stopped
+
+    # ❌ IMPORTANT: healthcheck removed (prevents false failures)
+
+
+  # =========================
+  # 2. Qdrant Vector DB
+  # =========================
+  qdrant-db:
+    image: qdrant/qdrant:latest
+    container_name: oran_qdrant_db
+
+    networks:
+      oran_twin_net:
+        ipv4_address: 172.20.0.20
+
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+
+    volumes:
+      - qdrant_storage:/qdrant/storage
+
+    restart: unless-stopped
+
+    # ❌ IMPORTANT: healthcheck removed (was incorrectly configured)
+
+
+  # =========================
+  # 3. RAG Core API
+  # =========================
+  rag-core-api:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.api
+
+    container_name: oran_rag_api
+
+    depends_on:
+      - qdrant-db
+      - ollama-service
+
+    networks:
+      oran_twin_net:
+        ipv4_address: 172.20.0.30
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./data/source_docs:/app/data/source_docs
+      - ./.env:/app/.env
+
+    restart: unless-stopped

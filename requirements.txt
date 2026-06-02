@@ -1,0 +1,12 @@
+fastapi==0.111.0
+uvicorn==0.30.1
+llama-index-core
+llama-index-vector-stores-qdrant
+llama-index-embeddings-huggingface
+llama-index-llms-ollama
+llama-index-llms-gemini
+qdrant-client==1.9.1
+pydantic-settings==2.3.1
+pypdf==4.2.0
+sentence-transformers==3.0.1
+torch
