@@ -11,6 +11,7 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.workflow import Workflow, StartEvent, StopEvent, step, Event
 
 from config.settings import settings
+from services.prompt_templates import TELECOM_CONTEXT_PROMPT
 
 
 class RetrievalEvent(Event):
@@ -78,22 +79,13 @@ class TelecomAgentWorkflow(Workflow):
         context_str = "\n\n---\n\n".join(context_parts)
         sources_str = "\n".join(source_parts)
 
-        full_prompt = f"""
-You are an expert O-RAN & Digital Twin engineer.
+        # Use the shared prompt template
+        prompt = TELECOM_CONTEXT_PROMPT.format(
+            context_str=context_str,
+            query_str=ev.query,
+        )
 
-Use ONLY the context below to answer the question. If the answer cannot be
-found in the context, say so explicitly instead of guessing.
-
-Context:
-{context_str}
-
-Question:
-{ev.query}
-
-Answer clearly and technically:
-"""
-
-        response = await self.gemini_llm.acomplete(full_prompt)
+        response = await self.gemini_llm.acomplete(prompt)
 
         return StopEvent(result={
             "response": response.text,
