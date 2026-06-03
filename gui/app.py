@@ -18,8 +18,8 @@ THEMES = {
         "surface2":     "#E8EFEA",
         "primary":      "#0F7643",
         "primary_dim":  "#0B5932",
-        "text":         "#0F7643",
-        "text_muted":   "#557A67",
+        "text":         "#1A2E22",      # داكن مقروء — مش أخضر
+        "text_muted":   "#5A7A68",
         "border":       "#CFDBD3",
         "input_bg":     "#FFFFFF",
         "user_bubble":  "#E8EFEA",
@@ -30,10 +30,10 @@ THEMES = {
         "bg":           "#050806",
         "surface":      "#0D1410",
         "surface2":     "#121B16",
-        "primary":      "#00FF66",
-        "primary_dim":  "#00CC52",
-        "text":         "#00FF66",
-        "text_muted":   "#00AA44",
+        "primary":      "#4674F0",      # أخضر أقل حدة من FF
+        "primary_dim":  "#16A54D",
+        "text":         "#E8F0EB",      # أبيض مائل للأخضر الفاتح جداً — مريح
+        "text_muted":   "#7AAD8A",      # رمادي-أخضر للـ muted
         "border":       "#1A2E24",
         "input_bg":     "#0D1410",
         "user_bubble":  "#121B16",
@@ -46,8 +46,8 @@ THEMES = {
         "surface2":     "#DFD9CA",
         "primary":      "#2D5A27",
         "primary_dim":  "#1E3F1A",
-        "text":         "#2D5A27",
-        "text_muted":   "#5E7A5A",
+        "text":         "#1E2D1C",      # بني-أخضر داكن مقروء
+        "text_muted":   "#6B7D65",
         "border":       "#D2C9B5",
         "input_bg":     "#F4EFE3",
         "user_bubble":  "#DFD9CA",
@@ -69,12 +69,49 @@ t = THEMES[st.session_state.theme]
 
 st.markdown(f"""
 <style>
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {{
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"], [data-testid="stAppViewBlockContainer"] {{
         background-color: {t['bg']} !important;
         color: {t['text']} !important;
     }}
     [data-testid="stHeader"] {{
         background-color: {t['bg']} !important;
+    }}
+    [data-testid="stMainBlockContainer"] {{
+        background-color: {t['bg']} !important;
+        color: {t['text']} !important;
+    }}
+    [data-testid="stBottom"] {{
+        background-color: {t['bg']} !important;
+    }}
+    [data-testid="stBottom"] > div {{
+        background-color: {t['bg']} !important;
+    }}
+    [data-testid="stBottom"] div {{
+        background-color: {t['bg']} !important;
+    }}
+    [data-testid="stBottomBlockContainer"] {{
+        background-color: {t['bg']} !important;
+    }}
+    .stChatInputContainer {{
+        background-color: {t['bg']} !important;
+    }}
+    [data-testid="stChatInputPropagator"] {{
+        background-color: {t['bg']} !important;
+    }}
+    section[data-testid="stBottom"] > div {{
+        background-color: {t['bg']} !important;
+    }}
+    .stChatInput {{
+        background-color: {t['bg']} !important;
+    }}
+    [class*="bottom"] {{
+        background-color: {t['bg']} !important;
+    }}
+    div[class*="InputContainer"] {{
+        background-color: {t['bg']} !important;
+    }}
+    [data-testid="stChatInputTextArea"] {{
+        background-color: {t['input_bg']} !important;
     }}
     [data-testid="stSidebar"] {{
         background-color: {t['surface']} !important;
@@ -85,6 +122,9 @@ st.markdown(f"""
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+    }}
+    [data-testid="stChatInput"] {{
+        background-color: transparent !important;
     }}
     [data-testid="stChatInput"] textarea {{
         background-color: {t['input_bg']} !important;
@@ -105,6 +145,21 @@ st.markdown(f"""
     }}
     div[data-testid="stMarkdownContainer"] p {{
         color: {t['text']} !important;
+    }}
+    div[data-testid="stMarkdownContainer"] li {{
+        color: {t['text']} !important;
+    }}
+    div[data-testid="stMarkdownContainer"] h1,
+    div[data-testid="stMarkdownContainer"] h2,
+    div[data-testid="stMarkdownContainer"] h3 {{
+        color: {t['primary']} !important;
+    }}
+    div[data-testid="stMarkdownContainer"] code {{
+        color: {t['primary']} !important;
+        background-color: {t['surface2']} !important;
+    }}
+    .stCaption {{
+        color: {t['text_muted']} !important;
     }}
     .main-title {{
         font-size: 2.2rem;
@@ -142,6 +197,7 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
+# --- Sidebar ---
 with st.sidebar:
     if st.button("➕ New Chat Session", use_container_width=True):
         st.session_state.current_chat_id = None
@@ -151,13 +207,11 @@ with st.sidebar:
     if st.session_state.chats:
         for chat_id, chat_data in list(st.session_state.chats.items()):
             is_current = (chat_id == st.session_state.current_chat_id)
-            btn_style = "primary" if is_current else "secondary"
-            
             if st.button(
-                f"💬 {chat_data['title']}", 
-                key=f"sidebar_chat_{chat_id}", 
+                f"💬 {chat_data['title']}",
+                key=f"sidebar_chat_{chat_id}",
                 use_container_width=True,
-                type=btn_style
+                type="primary" if is_current else "secondary",
             ):
                 st.session_state.current_chat_id = chat_id
                 st.rerun()
@@ -171,6 +225,7 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+# --- Header: title + theme icons on same line ---
 header_cols = st.columns([0.7, 0.1, 0.1, 0.1])
 
 with header_cols[0]:
@@ -180,15 +235,12 @@ with header_cols[0]:
 for idx, key in enumerate(THEME_KEYS):
     with header_cols[idx + 1]:
         is_active = key == st.session_state.theme
-        btn_label = f"{THEMES[key]['icon']}"
-        btn_type = "primary" if is_active else "secondary"
-        
         if st.button(
-            btn_label, 
-            key=f"top_theme_btn_{key}", 
-            help=f"Switch to {THEMES[key]['label']} mode", 
+            THEMES[key]['icon'],
+            key=f"top_theme_btn_{key}",
+            help=f"Switch to {THEMES[key]['label']} mode",
             use_container_width=True,
-            type=btn_type
+            type="primary" if is_active else "secondary",
         ):
             if key != st.session_state.theme:
                 st.session_state.theme = key
@@ -196,6 +248,7 @@ for idx, key in enumerate(THEME_KEYS):
 
 st.markdown("---")
 
+# --- Chat Area ---
 if st.session_state.current_chat_id and st.session_state.current_chat_id in st.session_state.chats:
     active_messages = st.session_state.chats[st.session_state.current_chat_id]["messages"]
 else:
@@ -211,16 +264,13 @@ for message in active_messages:
                     unsafe_allow_html=True,
                 )
 
+# --- Input ---
 if prompt := st.chat_input("Ask about Near-RT RIC, E2 nodes, or O-RAN specs..."):
     if st.session_state.current_chat_id is None:
         timestamp_id = str(time.time())
         words = prompt.split()
         generated_title = " ".join(words[:4]) + ("..." if len(words) > 4 else "")
-        
-        st.session_state.chats[timestamp_id] = {
-            "title": generated_title,
-            "messages": []
-        }
+        st.session_state.chats[timestamp_id] = {"title": generated_title, "messages": []}
         st.session_state.current_chat_id = timestamp_id
         active_messages = st.session_state.chats[timestamp_id]["messages"]
 
@@ -233,11 +283,7 @@ if prompt := st.chat_input("Ask about Near-RT RIC, E2 nodes, or O-RAN specs...")
         placeholder.markdown("🧠 *Analyzing query and retrieving context...*")
 
         try:
-            response = requests.post(
-                API_URL,
-                json={"query": prompt},
-                timeout=120,
-            )
+            response = requests.post(API_URL, json={"query": prompt}, timeout=120)
             response.raise_for_status()
 
             data = response.json()
@@ -253,24 +299,20 @@ if prompt := st.chat_input("Ask about Near-RT RIC, E2 nodes, or O-RAN specs...")
                         unsafe_allow_html=True,
                     )
 
-            active_messages.append({
-                "role": "assistant",
-                "content": answer,
-                "sources": sources,
-            })
+            active_messages.append({"role": "assistant", "content": answer, "sources": sources})
             st.rerun()
 
         except requests.exceptions.ConnectionError:
             msg = "❌ **Connection Error**: Cannot reach the RAG API. Ensure Docker containers are running (`docker compose up -d`)."
-            placeholder.markdown(msg)
             active_messages.append({"role": "assistant", "content": msg})
+            st.rerun()
 
         except requests.exceptions.Timeout:
             msg = "❌ **Timeout Error**: The RAG API took too long to respond. The models might still be loading."
-            placeholder.markdown(msg)
             active_messages.append({"role": "assistant", "content": msg})
+            st.rerun()
 
         except Exception as e:
             msg = f"❌ **Execution Error**: `{str(e)}`"
-            placeholder.markdown(msg)
             active_messages.append({"role": "assistant", "content": msg})
+            st.rerun()
