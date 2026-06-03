@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # LLM APIs
     # =========================
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
-    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-1.5-pro")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
     OLLAMA_BASE_URL: str = os.getenv(
         "OLLAMA_BASE_URL",

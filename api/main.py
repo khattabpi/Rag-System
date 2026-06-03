@@ -1,3 +1,4 @@
+import traceback
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
@@ -40,4 +41,5 @@ async def process_rag_query(payload: QueryRequest):
         execution_result = await rag_pipeline.query(payload.query)
         return execution_result
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Pipeline Execution Abort: {str(e)}")
