@@ -18,7 +18,7 @@ THEMES = {
         "surface2":     "#E8EFEA",
         "primary":      "#0F7643",
         "primary_dim":  "#0B5932",
-        "text":         "#1A2E22",      # داكن مقروء — مش أخضر
+        "text":         "#1A2E22",     
         "text_muted":   "#5A7A68",
         "border":       "#CFDBD3",
         "input_bg":     "#FFFFFF",
@@ -30,10 +30,10 @@ THEMES = {
         "bg":           "#050806",
         "surface":      "#0D1410",
         "surface2":     "#121B16",
-        "primary":      "#4674F0",      # أخضر أقل حدة من FF
+        "primary":      "#4674F0",      
         "primary_dim":  "#16A54D",
-        "text":         "#E8F0EB",      # أبيض مائل للأخضر الفاتح جداً — مريح
-        "text_muted":   "#7AAD8A",      # رمادي-أخضر للـ muted
+        "text":         "#E8F0EB",    
+        "text_muted":   "#7AAD8A",      
         "border":       "#1A2E24",
         "input_bg":     "#0D1410",
         "user_bubble":  "#121B16",
@@ -46,7 +46,7 @@ THEMES = {
         "surface2":     "#DFD9CA",
         "primary":      "#2D5A27",
         "primary_dim":  "#1E3F1A",
-        "text":         "#1E2D1C",      # بني-أخضر داكن مقروء
+        "text":         "#1E2D1C",        
         "text_muted":   "#6B7D65",
         "border":       "#D2C9B5",
         "input_bg":     "#F4EFE3",
@@ -106,7 +106,7 @@ st.markdown(f"""
     }}
     [class*="bottom"] {{
         background-color: {t['bg']} !important;
-    }}
+    }}مقروء
     div[class*="InputContainer"] {{
         background-color: {t['bg']} !important;
     }}
