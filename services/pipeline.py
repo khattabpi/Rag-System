@@ -124,9 +124,11 @@ class TelecomRAGPipeline:
         # Loaded ONCE at startup, reused across all queries
         self.reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
+        # max_retries=5 → tolerate transient Gemini 5xx/overload errors
         self.gemini_llm = GoogleGenAI(
             model=settings.GEMINI_MODEL,
             api_key=settings.GOOGLE_API_KEY,
+            max_retries=5,
         )
 
         self.workflow = TelecomAgentWorkflow(
