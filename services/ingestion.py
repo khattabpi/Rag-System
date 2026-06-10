@@ -44,44 +44,92 @@ class TelecomIngestionEngine:
 
         return meta
 
-    def _collection_has_data(self) -> bool:
-        """True لو الـ collection موجودة وفيها points بالفعل."""
+    def _get_existing_files(self) -> set:
+        existing_files = set()
+
         try:
             if not self.client.collection_exists(settings.COLLECTION_NAME):
-                return False
-            return self.client.count(settings.COLLECTION_NAME).count > 0
-        except Exception:
-            return False
+                return existing_files
+
+            records, next_page = self.client.scroll(
+                collection_name=settings.COLLECTION_NAME,
+                limit=10000,
+                with_payload=["file_name"],
+                with_vectors=False,
+            )
+
+            for record in records:
+                if record.payload and "file_name" in record.payload:
+                    existing_files.add(record.payload["file_name"])
+
+            while next_page is not None:
+                records, next_page = self.client.scroll(
+                    collection_name=settings.COLLECTION_NAME,
+                    limit=10000,
+                    offset=next_page,
+                    with_payload=["file_name"],
+                    with_vectors=False,
+                )
+                for record in records:
+                    if record.payload and "file_name" in record.payload:
+                        existing_files.add(record.payload["file_name"])
+
+        except Exception as e:
+            print(f"[!] Error fetching existing files from Qdrant: {e}")
+
+        return existing_files
 
     def run_ingestion(self, data_dir: str):
         if not os.path.exists(data_dir) or not os.listdir(data_dir):
             print(f"[!] Target directory '{data_dir}' is empty. Skipping index initialization.")
             return
 
-        # متعملش ingestion تاني لو الـ collection فيها داتا.
-        # عشان تجبر إعادة ingestion (مثلاً بعد تغيير الـ chunking أو إضافة
-        # ملفات جديدة)، امسح الـ Qdrant volume الأول: docker compose down -v
-        if self._collection_has_data():
-            print("[=] Collection already populated. Skipping ingestion.")
-            return
+        print(f"[*] Reading technical documents from {data_dir}...")
 
-        print(f"[*] Ingesting technical documents from {data_dir}...")
         reader = SimpleDirectoryReader(
             input_dir=data_dir,
             file_metadata=self.extract_metadata,
             required_exts=[".pdf", ".md", ".txt"],
         )
-        documents = reader.load_data()
 
-        # تقطيع مسطّح: كل chunk بيشيل فقرة متماسكة (~512 token)
-        node_parser = SentenceSplitter(chunk_size=512, chunk_overlap=64)
-        nodes = node_parser.get_nodes_from_documents(documents)
+        all_documents = reader.load_data()
+
+        existing_files = self._get_existing_files()
+
+        new_documents = [
+            doc
+            for doc in all_documents
+            if doc.metadata.get("file_name") not in existing_files
+        ]
+
+        if not new_documents:
+            print("[=] All documents in the directory are already ingested. Skipping.")
+            return
+
+        new_file_names = {
+            doc.metadata.get("file_name") for doc in new_documents
+        }
+
+        print(
+            f"[*] Found {len(new_file_names)} new file(s) to ingest: "
+            f"{', '.join(new_file_names)}"
+        )
+
+        node_parser = SentenceSplitter(
+            chunk_size=512,
+            chunk_overlap=64,
+        )
+
+        nodes = node_parser.get_nodes_from_documents(new_documents)
 
         vector_store = QdrantVectorStore(
             client=self.client,
             collection_name=settings.COLLECTION_NAME,
         )
-        storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+        storage_context = StorageContext.from_defaults(
+            vector_store=vector_store
+        )
 
         LlamaSettings.embed_model = self.embed_model
 
@@ -90,4 +138,5 @@ class TelecomIngestionEngine:
             storage_context=storage_context,
             show_progress=True,
         )
+
         print("[+] Vector space and payload indexing completed successfully.")
