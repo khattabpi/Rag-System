@@ -3,7 +3,7 @@ import requests
 import time
 
 st.set_page_config(
-    page_title="AI-RAN Technical Copilot",
+    page_title="O-RAN Copilot",
     page_icon="🗼",
     layout="centered",
     initial_sidebar_state="expanded",
@@ -18,7 +18,7 @@ THEMES = {
         "surface2":     "#E8EFEA",
         "primary":      "#0F7643",
         "primary_dim":  "#0B5932",
-        "text":         "#1A2E22",      # داكن مقروء — مش أخضر
+        "text":         "#1A2E22",      
         "text_muted":   "#5A7A68",
         "border":       "#CFDBD3",
         "input_bg":     "#FFFFFF",
@@ -30,10 +30,10 @@ THEMES = {
         "bg":           "#050806",
         "surface":      "#0D1410",
         "surface2":     "#121B16",
-        "primary":      "#4674F0",      # أخضر أقل حدة من FF
+        "primary":      "#4674F0",     
         "primary_dim":  "#16A54D",
-        "text":         "#E8F0EB",      # أبيض مائل للأخضر الفاتح جداً — مريح
-        "text_muted":   "#7AAD8A",      # رمادي-أخضر للـ muted
+        "text":         "#E8F0EB",      
+        "text_muted":   "#7AAD8A",      
         "border":       "#1A2E24",
         "input_bg":     "#0D1410",
         "user_bubble":  "#121B16",
@@ -199,11 +199,11 @@ st.markdown(f"""
 
 # --- Sidebar ---
 with st.sidebar:
-    if st.button("➕ New Chat Session", use_container_width=True):
+    if st.button("New Chat...", use_container_width=True):
         st.session_state.current_chat_id = None
         st.rerun()
 
-    st.markdown('<div class="chat-history-title">Active Conversations</div>', unsafe_allow_html=True)
+    st.markdown('<div class="chat-history-title">Active</div>', unsafe_allow_html=True)
     if st.session_state.chats:
         for chat_id, chat_data in list(st.session_state.chats.items()):
             is_current = (chat_id == st.session_state.current_chat_id)
@@ -229,7 +229,7 @@ with st.sidebar:
 header_cols = st.columns([0.7, 0.1, 0.1, 0.1])
 
 with header_cols[0]:
-    st.markdown('<div class="main-title">🗼 AI-RAN Technical Copilot</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-title">🗼 O-RAN Copilot</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-title">High-Precision Context-Aware Spec Verification Core</div>', unsafe_allow_html=True)
 
 for idx, key in enumerate(THEME_KEYS):
@@ -265,7 +265,7 @@ for message in active_messages:
                 )
 
 # --- Input ---
-if prompt := st.chat_input("Ask about Near-RT RIC, E2 nodes, or O-RAN specs..."):
+if prompt := st.chat_input("Here you are :)"):
     if st.session_state.current_chat_id is None:
         timestamp_id = str(time.time())
         words = prompt.split()
@@ -280,7 +280,7 @@ if prompt := st.chat_input("Ask about Near-RT RIC, E2 nodes, or O-RAN specs...")
 
     with st.chat_message("assistant"):
         placeholder = st.empty()
-        placeholder.markdown("🧠 *Analyzing query and retrieving context...*")
+        placeholder.markdown("🧠 Analyzing")
 
         try:
             response = requests.post(API_URL, json={"query": prompt}, timeout=120)
